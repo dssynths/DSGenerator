@@ -12,11 +12,11 @@ class fileHandler():
         self.outpath = ""
 
     '''make file name from soundname, paramNames, param values and variation number'''
-    def makeName(self, soundName, paramArr, fixedParams, enumP, v):
+    def makeName(self, soundName, paramArr, enumP, v):
         '''Construct filenames with static parameters'''
         self.fname = soundName
-        for paramNum in range(len(fixedParams)):
-            self.fname = self.fname + '--' + fixedParams[paramNum]['synth_pname'] + '-'+'{:05.2f}'.format(fixedParams[paramNum]["synth_val"])
+        # for paramNum in range(len(fixedParams)):
+        #     self.fname = self.fname + '--' + fixedParams[paramNum]['synth_pname'] + '-'+'{:05.2f}'.format(fixedParams[paramNum]["synth_val"])
         for paramNum in range(len(paramArr)):
             self.fname = self.fname + '--' + paramArr[paramNum]['user_pname'] + '-'+'{:05.2f}'.format(enumP[paramNum])
         self.fname = self.fname + '--v-'+'{:03}'.format(v)

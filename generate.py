@@ -19,7 +19,6 @@ from nsjsonmanager import nsjson
 
 
 from genericsynth import synthInterface as SI
-# from myDripPatternSynth import MyDripPatternSynth
 from filewrite import fileHandler
 
 import importlib
@@ -87,7 +86,7 @@ def main():
 
     with open(module_name) as json_file:
         MyConfig = json.load(json_file)
-        print("Reading parameters for generating ", MyConfig['soundname'], " texture.. ")
+        print("Reading parameters for generating ", "red" , MyConfig['soundname'], " texture.. ")
         # for p in MyConfig['params']:
         #     p['formula'] = eval("lambda *args: " + p['formula'])
         # for p in MyConfig['fixedParams']:
@@ -156,9 +155,8 @@ def generate(MyConfig):
     synthParam = list(itertools.product(*synthRange))
 
     numChunks=math.floor(MyConfig["soundDuration"]/MyConfig["chunkSecs"])  #Total duraton DIV duraiton of each chunk 
-    '''Total duration of the audio textures generated for this dataset'''
-    totalDuration = len(userParam)*MyConfig["soundDuration"]
-
+    totalDuration = len(userParam)*MyConfig["soundDuration"] # Total duration of the audio textures generated for this dataset'''
+ 
     '''Set fixed parameters prior to the generation'''
     # print(soundModels[MyConfig["soundname"]].PatternSynth)
     barsynthclass = getattr(soundModels["sound"],MyConfig["soundname"])
@@ -235,13 +233,15 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
 
             '''Write wav'''
             fileHandle = fileHandler()
-            wavName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
+            #wavName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
+            wavName = fileHandle.makeName(MyConfig["soundname"], paramArr, userP, v)
             wavPath = fileHandle.makeFullPath(outputpath,wavName,".wav")
             chunkedAudio = SI.selectVariation(barsig, MyConfig["samplerate"], v, MyConfig["chunkSecs"])
             sf.write(wavPath, chunkedAudio, MyConfig["samplerate"])
 
             '''Write params'''
-            paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
+            #paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
+            paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, userP, v)
             pfName = fileHandle.makeFullPath(outputpath, paramName,".params")
 
             if MyConfig["recordFormat"] == "params" or MyConfig["recordFormat"]==0:
@@ -255,7 +255,7 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
                         pm.addMetaParam(pfName, paramArr[pnum]['synth_pname']+"_synth_doc",barsynth.getParam(paramArr[pnum]["synth_pname"],"synth_doc"))
 
                 for pnum in range(len(fixedParams)):
-                    pm.addParam(pfName, fixedParams[pnum]['synth_pname'], [0,MyConfig["soundDuration"]], [fixedParams[pnum]["synth_val"], fixedParams[pnum]["synth_val"]], units=fixedParams[pnum]['synth_units'], nvals=2, origUnits=None)
+                    #pm.addParam(pfName, fixedParams[pnum]['synth_pname'], [0,MyConfig["soundDuration"]], [fixedParams[pnum]["synth_val"], fixedParams[pnum]["synth_val"]], units=fixedParams[pnum]['synth_units'], nvals=2, origUnits=None)
                     pm.addMetaParam(pfName, fixedParams[pnum]['synth_pname']+"_user_doc",fixedParams[pnum]['user_doc']) 
                     pm.addMetaParam(pfName, fixedParams[pnum]['synth_pname']+"_synth_doc",barsynth.getParam(fixedParams[pnum]["synth_pname"],"synth_doc"))
 
