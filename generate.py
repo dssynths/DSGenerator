@@ -154,7 +154,9 @@ def generate(MyConfig):
     userParam = list(itertools.product(*userRange))
     synthParam = list(itertools.product(*synthRange))
 
-    numChunks=math.floor(MyConfig["soundDuration"]/MyConfig["chunkSecs"])  #Total duraton DIV duraiton of each chunk 
+    numChunks=MyConfig["numChunks"]
+    #math.floor(MyConfig["soundDuration"]/MyConfig["chunkSecs"])  #Total duraton DIV duraiton of each chunk 
+
     totalDuration = len(userParam)*MyConfig["soundDuration"] # Total duration of the audio textures generated for this dataset'''
  
     '''Set fixed parameters prior to the generation'''
@@ -227,22 +229,36 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
                 barsynth.setParam(paramArr[paramInd]["synth_pname"], synthP[paramInd])
         
         barsig=barsynth.generate(MyConfig["soundDuration"])
-        numChunks=math.floor(MyConfig["soundDuration"]/MyConfig["chunkSecs"])  #Total duraton DIV duraiton of each chunk 
+        numChunks=MyConfig["numChunks"]#math.floor(MyConfig["soundDuration"]/MyConfig["chunkSecs"])  #Total duraton DIV duraiton of each chunk 
+        chunkSecs = MyConfig["soundDuration"]/numChunks
 
         for v in range(numChunks):
 
-            '''Write wav'''
             fileHandle = fileHandler()
-            #wavName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
-            wavName = fileHandle.makeName(MyConfig["soundname"], paramArr, userP, v)
-            wavPath = fileHandle.makeFullPath(outputpath,wavName,".wav")
-            chunkedAudio = SI.selectVariation(barsig, MyConfig["samplerate"], v, MyConfig["chunkSecs"])
-            sf.write(wavPath, chunkedAudio, MyConfig["samplerate"])
 
-            '''Write params'''
-            #paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
-            paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, userP, v)
-            pfName = fileHandle.makeFullPath(outputpath, paramName,".params")
+            if numChunks == 1:
+                '''Write wav'''
+                #wavName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
+                wavName = fileHandle.makeName(MyConfig["soundname"], paramArr, userP, None)
+                wavPath = fileHandle.makeFullPath(outputpath,wavName,".wav")
+                chunkedAudio = SI.selectVariation(barsig, MyConfig["samplerate"], v, chunkSecs)
+                sf.write(wavPath, chunkedAudio, MyConfig["samplerate"])
+
+                '''Write params'''
+                #paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
+                paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, userP, None)
+                pfName = fileHandle.makeFullPath(outputpath, paramName,".params")
+            else:
+                wavName = fileHandle.makeName(MyConfig["soundname"], paramArr, userP, v)
+                wavPath = fileHandle.makeFullPath(outputpath,wavName,".wav")
+                chunkedAudio = SI.selectVariation(barsig, MyConfig["samplerate"], v, chunkSecs)
+                sf.write(wavPath, chunkedAudio, MyConfig["samplerate"])
+
+                '''Write params'''
+                #paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
+                paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, userP, v)
+                pfName = fileHandle.makeFullPath(outputpath, paramName,".params")
+
 
             if MyConfig["recordFormat"] == "params" or MyConfig["recordFormat"]==0:
                 pm=paramManager.paramManager(pfName, fileHandle.getFullPath())

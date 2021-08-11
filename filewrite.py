@@ -19,7 +19,8 @@ class fileHandler():
         #     self.fname = self.fname + '--' + fixedParams[paramNum]['synth_pname'] + '-'+'{:05.2f}'.format(fixedParams[paramNum]["synth_val"])
         for paramNum in range(len(paramArr)):
             self.fname = self.fname + '--' + paramArr[paramNum]['user_pname'] + '-'+'{:05.2f}'.format(enumP[paramNum])
-        self.fname = self.fname + '--v-'+'{:03}'.format(v)
+        if v != None:
+            self.fname = self.fname + '--v-'+'{:02}'.format(v)
         return self.fname
 
     def getFileName(self):
