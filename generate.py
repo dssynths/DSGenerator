@@ -244,7 +244,7 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
                 chunkedAudio = SI.selectVariation(barsig, MyConfig["computeSR"], v, chunkSecs)
 
                 if MyConfig["computeSR"] != MyConfig["datafileSR"]:
-                    newsig=librosa.resample(chunkedAudio, computeSR, datafileSR)
+                    newsig=librosa.resample(chunkedAudio, MyConfig["computeSR"], MyConfig["datafileSR"])
                     sf.write(wavPath, newsig, MyConfig["datafileSR"])
                 else:
                     sf.write(wavPath, chunkedAudio, MyConfig["datafileSR"])
