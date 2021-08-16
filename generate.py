@@ -177,19 +177,34 @@ def generate(MyConfig):
     if MyConfig["recordFormat"] == "tfrecords" and MyConfig["tftype"] == "shards":
 
         shard_max_bytes = MyConfig["shard_size"] * 1024**2  # 200 MB maximum
-        audio_bytes_per_second = MyConfig["datafileSR"] * 2  # 16-bit audio
-        audio_bytes_total = audio_bytes_per_second * totalDuration
+        audio_bytes_per_second = MyConfig["datafileSR"] * 16 * 1 # 16-bit audio
+        audio_bytes_total = audio_bytes_per_second * totalDuration / 4
+        print("audio bytes", audio_bytes_total)
+        print("shard max bytes", shard_max_bytes)
+
         numShards = math.ceil(audio_bytes_total/shard_max_bytes)
 
-        print("Number of shards", numShards)
         numFiles = len(userParam)
-        numFilesPerShard = math.floor( len(userParam) / numShards )
-        print("Number of distinct parameters per shard", numFilesPerShard)
 
-        beg = 0
-        end = numFilesPerShard #two iterators for moving through parameter arrays
+        # FIRST FILE CONTAINS MODULUS NUMBER OF SHARDS
+        if len(userParam) % numShards != 0:
+            beg = 0
+            end = len(userParam) % numShards
+            cursor = end
+            print("Writing first shard with unequal records")
+            enumerate( 0, beg, end, userParam, synthParam, barsynth, paramArr, fixedParams, MyConfig, outputpath, totalDuration)
+            numFilesPerShard = math.floor( (len(userParam)-end) / numShards )
+        else:
+            numFilesPerShard = math.floor( len(userParam) / numShards )
+            cursor = 0
+            print("Number of distinct parameters per shard", numFilesPerShard)
 
-        for shardNum in range(numShards):
+        beg = cursor
+        end = cursor + numFilesPerShard #two iterators for moving through parameter arrays
+
+        print("Number of equal shards", numShards)
+
+        for shardNum in range(1,numShards+1):
             enumerate( shardNum, beg, end, userParam, synthParam, barsynth, paramArr, fixedParams, MyConfig, outputpath, totalDuration)
             beg = beg + numFilesPerShard
             end = end + numFilesPerShard
@@ -247,6 +262,7 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
                     newsig=librosa.resample(chunkedAudio, MyConfig["computeSR"], MyConfig["datafileSR"])
                     sf.write(wavPath, newsig, MyConfig["datafileSR"])
                 else:
+                    newsig = chunkedAudio
                     sf.write(wavPath, chunkedAudio, MyConfig["datafileSR"])
 
                 '''Write params'''
@@ -262,6 +278,7 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
                     newsig=librosa.resample(chunkedAudio, MyConfig["computeSR"], MyConfig["datafileSR"])
                     sf.write(wavPath, newsig, MyConfig["datafileSR"])
                 else:
+                    newsig = chunkedAudio
                     sf.write(wavPath, chunkedAudio, MyConfig["datafileSR"])
 
                 '''Write params'''
@@ -306,7 +323,7 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
                     '''Usage of tfrecords with single record per file'''                
                     tfr=tfrecordManager.tfrecordManager()
 
-                    tfr.__addFeatureData__(pfName, [0,MyConfig["soundDuration"]], chunkedAudio, v)
+                    tfr.__addFeatureData__(pfName, [0,MyConfig["soundDuration"]], newsig, v)
                     # MyConfig["shard_size"], MyConfig["samplerate"], totalDuration)
                     
                     for pnum in range(len(paramArr)):
@@ -318,9 +335,10 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
             
                     tfr.__tfwriteOne__(pfName)
                     print("Generated a tfrecords")
+                
                 else:
                     ''' Creating a list for writing N tfrecords '''
-                    audioSegments.append(chunkedAudio)
+                    audioSegments.append(newsig)
                     pfnames.append(pfName)
                     soundDurations.append([0,MyConfig["soundDuration"]])
                     segmentNum.append(v)
