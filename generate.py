@@ -162,7 +162,7 @@ def generate(MyConfig):
     '''Set fixed parameters prior to the generation'''
     # print(soundModels[MyConfig["soundname"]].PatternSynth)
     barsynthclass = getattr(soundModels["sound"],MyConfig["soundname"])
-    barsynth= barsynthclass()
+    barsynth= barsynthclass(MyConfig["computeSR"])
     print(barsynth)
     
     for fixparams in fixedParams:
@@ -177,7 +177,7 @@ def generate(MyConfig):
     if MyConfig["recordFormat"] == "tfrecords" and MyConfig["tftype"] == "shards":
 
         shard_max_bytes = MyConfig["shard_size"] * 1024**2  # 200 MB maximum
-        audio_bytes_per_second = MyConfig["samplerate"] * 2  # 16-bit audio
+        audio_bytes_per_second = MyConfig["datafileSR"] * 2  # 16-bit audio
         audio_bytes_total = audio_bytes_per_second * totalDuration
         numShards = math.ceil(audio_bytes_total/shard_max_bytes)
 
@@ -210,7 +210,7 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
     pfnames = []
     segmentNum = []
 
-    sg = nsjson.nsJson("/", outputpath, 1, MyConfig["samplerate"], MyConfig['soundname'])
+    sg = nsjson.nsJson("/", outputpath, 1, MyConfig["datafileSR"], MyConfig['soundname'])
 
     '''Enumerate parameters'''
     for index in range(beg, end): # iterating through a caretesian product of lists
@@ -241,8 +241,13 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
                 #wavName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
                 wavName = fileHandle.makeName(MyConfig["soundname"], paramArr, userP, None)
                 wavPath = fileHandle.makeFullPath(outputpath,wavName,".wav")
-                chunkedAudio = SI.selectVariation(barsig, MyConfig["samplerate"], v, chunkSecs)
-                sf.write(wavPath, chunkedAudio, MyConfig["samplerate"])
+                chunkedAudio = SI.selectVariation(barsig, MyConfig["computeSR"], v, chunkSecs)
+
+                if MyConfig["computeSR"] != MyConfig["datafileSR"]:
+                    newsig=librosa.resample(chunkedAudio, computeSR, datafileSR)
+                    sf.write(wavPath, newsig, MyConfig["datafileSR"])
+                else:
+                    sf.write(wavPath, chunkedAudio, MyConfig["datafileSR"])
 
                 '''Write params'''
                 #paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
@@ -251,8 +256,13 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
             else:
                 wavName = fileHandle.makeName(MyConfig["soundname"], paramArr, userP, v)
                 wavPath = fileHandle.makeFullPath(outputpath,wavName,".wav")
-                chunkedAudio = SI.selectVariation(barsig, MyConfig["samplerate"], v, chunkSecs)
-                sf.write(wavPath, chunkedAudio, MyConfig["samplerate"])
+                chunkedAudio = SI.selectVariation(barsig, MyConfig["computeSR"], v, chunkSecs)
+
+                if MyConfig["computeSR"] != MyConfig["datafileSR"]:
+                    newsig=librosa.resample(chunkedAudio, MyConfig["computeSR"], MyConfig["datafileSR"])
+                    sf.write(wavPath, newsig, MyConfig["datafileSR"])
+                else:
+                    sf.write(wavPath, chunkedAudio, MyConfig["datafileSR"])
 
                 '''Write params'''
                 #paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
