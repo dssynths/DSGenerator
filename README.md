@@ -43,7 +43,6 @@ The Max and Min values of parameters are described in Normalized(Norm) or Natura
             "synth_pname": Synth parameter name
             "synth_minval": Minimum synth value for parameter
             "synth_maxval": Maximum synth value for parameter
-            "synth_units": Natural or Normalized units
 
 **Example**
 
@@ -55,7 +54,6 @@ The Max and Min values of parameters are described in Normalized(Norm) or Natura
             "synth_pname": "irreg_exp",
             "synth_minval": 0,
             "synth_maxval": 1,
-            "synth_units": "natural"
 
 ## Dataset enumerator 
 

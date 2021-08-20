@@ -1,15 +1,15 @@
 {
 
-	"soundname": "Pop",
-	"samplerate": 16000,
-	"soundDuration": 4,
+      "soundname": "Pop",
+      "samplerate": 16000,
+      "soundDuration": 4,
       "numChunks": 2,
       "recordFormat": "tfrecords",
       "tftype": "shards",
       "shard_size": 2,
-	"params":
-	[
-		{
+      "params":
+      [
+            {
             "user_pname": "Irregularity",
             "user_minval": 0,
             "user_maxval": 1,
@@ -17,10 +17,9 @@
             "user_doc": "map to natural synth irregularity param [0, 1]",
             "synth_pname": "irreg_exp",
             "synth_minval": 0,
-            "synth_maxval": 1,
-            "synth_units": "natural"
+            "synth_maxval": 1
         },
-		{
+            {
             "user_pname": "center frequency",
             "user_minval": 220,
             "user_maxval": 440,
@@ -28,17 +27,15 @@
             "user_doc": "map to normed synth frequency param [220, 440]",
             "synth_pname": "cf",
             "synth_minval": 220,
-            "synth_maxval": 440,
-            "synth_units": "natural"
+            "synth_maxval": 440
         }
-	],
-	"fixedParams":
-	[
-		{
-		"user_doc": "rate of Pop sounds",
+      ],
+      "fixedParams":
+      [
+            {
+            "user_doc": "rate of Pop sounds",
             "synth_pname": "rate_exp",
-            "synth_val": 2,
-            "synth_units": "natural"
-		}
-	]
+            "synth_val": 2
+            }
+      ]
 }

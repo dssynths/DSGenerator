@@ -167,12 +167,12 @@ def generate(MyConfig):
     
     for fixparams in fixedParams:
 
-        if fixparams["synth_units"] == "norm":
-            '''Setting in Normal ranges'''
-            barsynth.setParamNorm(fixparams["synth_pname"], fixparams["synth_val"])
-        else: 
-            '''Setting in natural ranges'''
-            barsynth.setParam(fixparams["synth_pname"], fixparams["synth_val"])
+        # if fixparams["synth_units"] == "norm":
+        #     '''Setting in Normal ranges'''
+        #     barsynth.setParamNorm(fixparams["synth_pname"], fixparams["synth_val"])
+        # else: 
+        '''Setting in natural ranges'''
+        barsynth.setParam(fixparams["synth_pname"], fixparams["synth_val"])
     
     if MyConfig["recordFormat"] == "tfrecords" and MyConfig["tftype"] == "shards":
 
@@ -236,12 +236,12 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
 
         for paramInd in range(len(MyConfig["params"])):
         
-            if paramArr[paramInd]["synth_units"] == "norm":
-                '''Setting in Normal ranges'''
-                barsynth.setParamNorm(paramArr[paramInd]["synth_pname"], synthP[paramInd])
-            else: 
-                '''Setting in natural ranges'''
-                barsynth.setParam(paramArr[paramInd]["synth_pname"], synthP[paramInd])
+            # if paramArr[paramInd]["synth_units"] == "norm":
+            #     '''Setting in Normal ranges'''
+            #     barsynth.setParamNorm(paramArr[paramInd]["synth_pname"], synthP[paramInd])
+            # else: 
+            '''Setting in natural ranges'''
+            barsynth.setParam(paramArr[paramInd]["synth_pname"], synthP[paramInd])
         
         barsig=barsynth.generate(MyConfig["soundDuration"])
         numChunks=MyConfig["numChunks"]#math.floor(MyConfig["soundDuration"]/MyConfig["chunkSecs"])  #Total duraton DIV duraiton of each chunk 
@@ -293,8 +293,9 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
 
                 '''Write parameters and meta-parameters'''
                 for pnum in range(len(paramArr)):
-                        pm.addParam(pfName, paramArr[pnum]['synth_pname'], [0,MyConfig["soundDuration"]], [userP[pnum], userP[pnum]], units=paramArr[pnum]['synth_units'], nvals=paramArr[pnum]['user_nvals'], minval=paramArr[pnum]['user_minval'], maxval=paramArr[pnum]['user_maxval'], origUnits=None, origMinval=paramArr[pnum]['synth_minval'], origMaxval=paramArr[pnum]['synth_maxval'])
-
+                        #pm.addParam(pfName, paramArr[pnum]['synth_pname'], [0,MyConfig["soundDuration"]], [userP[pnum], userP[pnum]], units=paramArr[pnum]['synth_units'], nvals=paramArr[pnum]['user_nvals'], minval=paramArr[pnum]['user_minval'], maxval=paramArr[pnum]['user_maxval'], origUnits=None, origMinval=paramArr[pnum]['synth_minval'], origMaxval=paramArr[pnum]['synth_maxval'])
+                        pm.addParam(pfName, paramArr[pnum]['synth_pname'], [0,MyConfig["soundDuration"]], [userP[pnum], userP[pnum]], units="natural", nvals=paramArr[pnum]['user_nvals'], minval=paramArr[pnum]['user_minval'], maxval=paramArr[pnum]['user_maxval'], origUnits=None, origMinval=paramArr[pnum]['synth_minval'], origMaxval=paramArr[pnum]['synth_maxval'])
+                        
                         if "user_doc" in paramArr[pnum] and paramArr[pnum]["user_doc"] != "" :
                             pm.addMetaParam(pfName, paramArr[pnum]['synth_pname']+"_user_doc",paramArr[pnum]['user_doc']) 
 
