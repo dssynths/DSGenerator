@@ -162,7 +162,7 @@ def generate(MyConfig):
     '''Set fixed parameters prior to the generation'''
     # print(soundModels[MyConfig["soundname"]].PatternSynth)
     barsynthclass = getattr(soundModels["sound"],MyConfig["soundname"])
-    barsynth= barsynthclass(MyConfig["computeSR"])
+    barsynth= barsynthclass(sr=MyConfig["computeSR"])
     print(barsynth)
     
     for fixparams in fixedParams:
