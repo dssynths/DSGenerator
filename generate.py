@@ -162,80 +162,45 @@ def generate(MyConfig):
     '''Set fixed parameters prior to the generation'''
     # print(soundModels[MyConfig["soundname"]].PatternSynth)
     barsynthclass = getattr(soundModels["sound"],MyConfig["soundname"])
-    barsynth= barsynthclass(MyConfig["computeSR"])
+    barsynth= barsynthclass(sr=MyConfig["computeSR"])
     print(barsynth)
     
-    for fixparams in fixedParams:
+    # Manually set the parameters to Natural    
+    for params in paramArr:
+        params["synth_units"] = "natural"
 
-        # if fixparams["synth_units"] == "norm":
-        #     '''Setting in Normal ranges'''
-        #     barsynth.setParamNorm(fixparams["synth_pname"], fixparams["synth_val"])
-        # else: 
+    for fixparams in fixedParams:
         '''Setting in natural ranges'''
+        fixparams["synth_units"] = "natural"
         barsynth.setParam(fixparams["synth_pname"], fixparams["synth_val"])
     
-    if MyConfig["recordFormat"] == "tfrecords" and MyConfig["tftype"] == "shards":
-
-        shard_max_bytes = MyConfig["shard_size"] * 1024**2  # 200 MB maximum
-        audio_bytes_per_second = MyConfig["datafileSR"] * 16 * 1 # 16-bit audio
-        audio_bytes_total = audio_bytes_per_second * totalDuration / 4
-        print("audio bytes", audio_bytes_total)
-        print("shard max bytes", shard_max_bytes)
-
-        numShards = math.ceil(audio_bytes_total/shard_max_bytes)
-
-        numFiles = len(userParam)
-
-        # FIRST FILE CONTAINS MODULUS NUMBER OF SHARDS
-        if len(userParam) % numShards != 0:
-            beg = 0
-            end = len(userParam) % numShards
-            cursor = end
-            print("Writing first shard with unequal records")
-            enumerate( 0, beg, end, userParam, synthParam, barsynth, paramArr, fixedParams, MyConfig, outputpath, totalDuration)
-            numFilesPerShard = math.floor( (len(userParam)-end) / numShards )
-        else:
-            numFilesPerShard = math.floor( len(userParam) / numShards )
-            cursor = 0
-            print("Number of distinct parameters per shard", numFilesPerShard)
-
-        beg = cursor
-        end = cursor + numFilesPerShard #two iterators for moving through parameter arrays
-
-        print("Number of equal shards", numShards)
-
-        for shardNum in range(1,numShards+1):
-            enumerate( shardNum, beg, end, userParam, synthParam, barsynth, paramArr, fixedParams, MyConfig, outputpath, totalDuration)
-            beg = beg + numFilesPerShard
-            end = end + numFilesPerShard
-
-    else:
-        beg = 0
-        end = 1 #two iterators for moving through parameter arrays
-        for index in range(len(userParam)):
-            enumerate(index, beg, end, userParam, synthParam, barsynth, paramArr, fixedParams, MyConfig, outputpath, totalDuration)        
-            beg = beg + 1
-            end = end + 1
-
-def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixedParams, MyConfig, outputpath, totalDuration):
-
-    ''' Creatinga collection if needed'''
-    audioSegments = []
-    soundDurations = []
-    pfnames = []
-    segmentNum = []
-
     sg = nsjson.nsJson("/", outputpath, 1, MyConfig["datafileSR"], MyConfig['soundname'])
 
+    '''Only initialize if record is in tfrecord format'''
+    if MyConfig["recordFormat"] == "tfrecords":
+        try:
+            from tfrecordmanager import tfrecordManager
+            tfr=tfrecordManager.tfrecordManager()
+        except:
+            print("Please install tfrecords with <pip install -r requirements_tf.txt --src '.'> and run again")
+            sys.exit()
+
+    '''files for agrregate tfrecord writing'''
+    audioSegments = []
+    pfnames = []
+    soundDurations = []
+    segmentNum = []
+    usertfP = []
+    synthtfP = []
+
     '''Enumerate parameters'''
-    for index in range(beg, end): # iterating through a caretesian product of lists
+    for index in range(len(userParam)): # iterating through a caretesian product of lists
 
         '''Stepping through enumerated dataset'''
         userP = userParam[index]
         synthP = synthParam[index]
 
-        for paramInd in range(len(MyConfig["params"])):
-        
+        for paramInd in range(len(paramArr)):
             # if paramArr[paramInd]["synth_units"] == "norm":
             #     '''Setting in Normal ranges'''
             #     barsynth.setParamNorm(paramArr[paramInd]["synth_pname"], synthP[paramInd])
@@ -276,10 +241,10 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
 
                 if MyConfig["computeSR"] != MyConfig["datafileSR"]:
                     newsig=librosa.resample(chunkedAudio, MyConfig["computeSR"], MyConfig["datafileSR"])
-                    sf.write(wavPath, newsig, MyConfig["datafileSR"])
+                    sf.write(wavPath, newsig, MyConfig["datafileSR"], subtype='PCM_16')
                 else:
                     newsig = chunkedAudio
-                    sf.write(wavPath, chunkedAudio, MyConfig["datafileSR"])
+                    sf.write(wavPath, chunkedAudio, MyConfig["datafileSR"], subtype='PCM_16')
 
                 '''Write params'''
                 #paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
@@ -294,7 +259,7 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
                 '''Write parameters and meta-parameters'''
                 for pnum in range(len(paramArr)):
                         #pm.addParam(pfName, paramArr[pnum]['synth_pname'], [0,MyConfig["soundDuration"]], [userP[pnum], userP[pnum]], units=paramArr[pnum]['synth_units'], nvals=paramArr[pnum]['user_nvals'], minval=paramArr[pnum]['user_minval'], maxval=paramArr[pnum]['user_maxval'], origUnits=None, origMinval=paramArr[pnum]['synth_minval'], origMaxval=paramArr[pnum]['synth_maxval'])
-                        pm.addParam(pfName, paramArr[pnum]['synth_pname'], [0,MyConfig["soundDuration"]], [userP[pnum], userP[pnum]], units="natural", nvals=paramArr[pnum]['user_nvals'], minval=paramArr[pnum]['user_minval'], maxval=paramArr[pnum]['user_maxval'], origUnits=None, origMinval=paramArr[pnum]['synth_minval'], origMaxval=paramArr[pnum]['synth_maxval'])
+                        pm.addParam(pfName, paramArr[pnum]['synth_pname'], [0,MyConfig["soundDuration"]], [userP[pnum], userP[pnum]], units=paramArr[pnum]['synth_units'], nvals=paramArr[pnum]['user_nvals'], minval=paramArr[pnum]['user_minval'], maxval=paramArr[pnum]['user_maxval'], origUnits=None, origMinval=paramArr[pnum]['synth_minval'], origMaxval=paramArr[pnum]['synth_maxval'])
                         
                         if "user_doc" in paramArr[pnum] and paramArr[pnum]["user_doc"] != "" :
                             pm.addMetaParam(pfName, paramArr[pnum]['synth_pname']+"_user_doc",paramArr[pnum]['user_doc']) 
@@ -317,46 +282,78 @@ def enumerate( fileid, beg, end, userParam, synthParam, barsynth, paramArr, fixe
             
             elif MyConfig["recordFormat"] == "tfrecords":
 
-                from tfrecordmanager import tfrecordManager
+                tfr.__addFeatureData__(pfName, [0,MyConfig["soundDuration"]], newsig, v)
+                # MyConfig["shard_size"], MyConfig["samplerate"], totalDuration)
+                
+                for pnum in range(len(paramArr)):
+                    # paramArr[pnum]['synth_units'], paramArr[pnum]['user_nvals'], paramArr[pnum]['user_minval'], paramArr[pnum]['user_maxval'], paramArr[pnum]['synth_minval'], paramArr[pnum]['synth_maxval']
+                    tfr.__addParam__(paramArr[pnum], userP[pnum])
 
-                if MyConfig["tftype"] == "single":
-                    
-                    '''Usage of tfrecords with single record per file'''                
-                    tfr=tfrecordManager.tfrecordManager()
+                for pnum in range(len(fixedParams)):
+                    tfr.__addParam__(fixedParams[pnum], fixedParams[pnum]["synth_val"])
 
-                    tfr.__addFeatureData__(pfName, [0,MyConfig["soundDuration"]], newsig, v)
-                    # MyConfig["shard_size"], MyConfig["samplerate"], totalDuration)
-                    
-                    for pnum in range(len(paramArr)):
-                        # paramArr[pnum]['synth_units'], paramArr[pnum]['user_nvals'], paramArr[pnum]['user_minval'], paramArr[pnum]['user_maxval'], paramArr[pnum]['synth_minval'], paramArr[pnum]['synth_maxval']
-                        tfr.__addParam__(paramArr[pnum], userP[pnum])
+                print("size is " , tfr.__tfRetSize__())
+                tfr.__tfUpdateSize__()
 
-                    for pnum in range(len(fixedParams)):
-                        tfr.__addParam__(fixedParams[pnum], fixedParams[pnum]["synth_val"])
-            
+                '''Usage of tfrecords with single record per file'''                
+                if MyConfig["tftype"] == "single":                                
                     tfr.__tfwriteOne__(pfName)
                     print("Generated a tfrecords")
-                
                 else:
-                    ''' Creating a list for writing N tfrecords '''
-                    audioSegments.append(newsig)
-                    pfnames.append(pfName)
-                    soundDurations.append([0,MyConfig["soundDuration"]])
-                    segmentNum.append(v)
 
+                    ''' Append and do not write'''
+                    if tfr.__tfRetSize__() < MyConfig["shard_size"] :
+                        print("new size with record " , tfr.__tfRetSize__())
+                        audioSegments.append(newsig)
+                        pfnames.append(pfName)
+                        soundDurations.append([0,MyConfig["soundDuration"]])
+                        segmentNum.append(v)
+                        usertfP.append(userP)
+                        synthtfP.append(synthtfP)
+                    else:
+                        ''' Write and then append'''
+                        print(len(pfnames))
+                        tfr.__tfwriteN__(outputpath, pfnames, soundDurations, segmentNum, audioSegments, usertfP, synthtfP, paramArr, fixedParams)
+                        audioSegments = []
+                        pfnames = []
+                        soundDurations = []
+                        segmentNum= []
+                        usertfP = []
+                        synthtfP = []
+                        # afresh with current record
+                        audioSegments.append(newsig)
+                        pfnames.append(pfName)
+                        soundDurations.append([0,MyConfig["soundDuration"]])
+                        segmentNum.append(v)
+                        usertfP.append(userP)
+                        synthtfP.append(synthtfP)
+
+                        tfr.__addFeatureData__(pfName, [0,MyConfig["soundDuration"]], newsig, v)
+                        # MyConfig["shard_size"], MyConfig["samplerate"], totalDuration)
+                        
+                        for pnum in range(len(paramArr)):
+                            # paramArr[pnum]['synth_units'], paramArr[pnum]['user_nvals'], paramArr[pnum]['user_minval'], paramArr[pnum]['user_maxval'], paramArr[pnum]['synth_minval'], paramArr[pnum]['synth_maxval']
+                            tfr.__addParam__(paramArr[pnum], userP[pnum])
+
+                        for pnum in range(len(fixedParams)):
+                            tfr.__addParam__(fixedParams[pnum], fixedParams[pnum]["synth_val"])
+
+                        print("size is " , tfr.__tfRetSize__())
+                        tfr.__tfUpdateSize__() #might be a problem in edge case when each record is as big as max tfrecord size.
+                        print("Updated size is " , tfr.__tfRetSize__())
             else:
                 print("Not recognized format")
 
-    if MyConfig["recordFormat"] == "tfrecords" and MyConfig["tftype"] == "shards":
+    # if MyConfig["recordFormat"] == "tfrecords" and MyConfig["tftype"] == "shards":
 
-        tfr=tfrecordManager.tfrecordManager()
+    #     tfr=tfrecordManager.tfrecordManager()
 
-        print("Number of records per shard", len(pfnames))
+    #     print("Number of records per shard", len(pfnames))
 
-        pfName = fileHandle.makeFullPath(outputpath, "shard"+str(fileid),".params")
-        outrecord = pfName.split(".params")[0]+'.tfrecord'
-    
-        tfr.__tfwriteN__(outrecord, pfnames, soundDurations, segmentNum, audioSegments, userParam, synthParam, paramArr, fixedParams, numChunks, beg, end)
+    #     pfName = fileHandle.makeFullPath(outputpath, "shard"+str(fileid),".params")
+    #     outrecord = pfName.split(".params")[0]+'.tfrecord'
+
+    #     tfr.__tfwriteN__(outrecord, pfnames, soundDurations, segmentNum, audioSegments, userParam, synthParam, paramArr, fixedParams, numChunks, beg, end)
 
     #tfm=tfrecordManager.tfrecordManager(vFilesParam[v], outPath)
     #data,sr = librosa.core.load(outPath + fname + '--v-'+'{:03}'.format(v)+'.wav',sr=16000)
