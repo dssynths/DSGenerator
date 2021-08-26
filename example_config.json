@@ -7,6 +7,7 @@
       "recordFormat": "tfrecords",
       "tftype": "shards",
       "shard_size": 2,
+      "rngseed": null,
       "params":
       [
             {

@@ -164,8 +164,13 @@ def generate(MyConfig):
     barsynthclass = getattr(soundModels["sound"],MyConfig["soundname"])
 
     '''use a sample rate and rng seed if initialized'''
-    if MyConfig["rngseed"] == None:
+    if not "rngseed" in MyConfig:
         barsynth= barsynthclass(sr=MyConfig["computeSR"])
+    elif MyConfig["rngseed"] == None:
+        ''' Generate random seed '''
+        seed = np.random.randint(0, np.power(2,32))
+        print("Using user random seed", seed)
+        barsynth= barsynthclass(sr=MyConfig["computeSR"], rngseed=seed)
     else:
         print("Using user random seed", MyConfig["rngseed"])
         barsynth= barsynthclass(sr=MyConfig["computeSR"], rngseed=MyConfig["rngseed"])
@@ -256,7 +261,6 @@ def generate(MyConfig):
                 #paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, fixedParams, userP, v)
                 paramName = fileHandle.makeName(MyConfig["soundname"], paramArr, userP, v)
                 pfName = fileHandle.makeFullPath(outputpath, paramName,".params")
-
 
             if MyConfig["recordFormat"] == "params" or MyConfig["recordFormat"]==0:
                 pm=paramManager.paramManager(pfName, fileHandle.getFullPath())
