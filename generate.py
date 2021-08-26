@@ -162,9 +162,15 @@ def generate(MyConfig):
     '''Set fixed parameters prior to the generation'''
     # print(soundModels[MyConfig["soundname"]].PatternSynth)
     barsynthclass = getattr(soundModels["sound"],MyConfig["soundname"])
-    barsynth= barsynthclass(sr=MyConfig["computeSR"])
+
+    '''use a sample rate and rng seed if initialized'''
+    if MyConfig["rngseed"] == None:
+        barsynth= barsynthclass(sr=MyConfig["computeSR"])
+    else:
+        print("Using user random seed", MyConfig["rngseed"])
+        barsynth= barsynthclass(sr=MyConfig["computeSR"], rngseed=MyConfig["rngseed"])
     print(barsynth)
-    
+
     # Manually set the parameters to Natural    
     for params in paramArr:
         params["synth_units"] = "natural"
@@ -292,18 +298,18 @@ def generate(MyConfig):
                 for pnum in range(len(fixedParams)):
                     tfr.__addParam__(fixedParams[pnum], fixedParams[pnum]["synth_val"])
 
-                print("size is " , tfr.__tfRetSize__())
+                #print("size is " , tfr.__tfRetSize__())
                 tfr.__tfUpdateSize__()
 
                 '''Usage of tfrecords with single record per file'''                
                 if MyConfig["tftype"] == "single":                                
                     tfr.__tfwriteOne__(pfName)
-                    print("Generated a tfrecords")
+                    print("Generated a tfrecord")
                 else:
 
                     ''' Append and do not write'''
                     if tfr.__tfRetSize__() < MyConfig["shard_size"] :
-                        print("new size with record " , tfr.__tfRetSize__())
+                        #print("new size with record " , tfr.__tfRetSize__())
                         audioSegments.append(newsig)
                         pfnames.append(pfName)
                         soundDurations.append([0,MyConfig["soundDuration"]])
@@ -338,9 +344,9 @@ def generate(MyConfig):
                         for pnum in range(len(fixedParams)):
                             tfr.__addParam__(fixedParams[pnum], fixedParams[pnum]["synth_val"])
 
-                        print("size is " , tfr.__tfRetSize__())
+                        #print("size is " , tfr.__tfRetSize__())
                         tfr.__tfUpdateSize__() #might be a problem in edge case when each record is as big as max tfrecord size.
-                        print("Updated size is " , tfr.__tfRetSize__())
+                        #print("Updated size is " , tfr.__tfRetSize__())
             else:
                 print("Not recognized format")
 
