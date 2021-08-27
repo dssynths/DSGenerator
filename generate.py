@@ -320,10 +320,6 @@ def generate(MyConfig):
                         segmentNum.append(v)
                         usertfP.append(userP)
                         synthtfP.append(synthtfP)
-
-                        if index == (len(userParam) - 1) and v == (numChunks-1):
-                            print(len(pfnames))
-                            tfr.__tfwriteN__(outputpath, pfnames, soundDurations, segmentNum, audioSegments, usertfP, synthtfP, paramArr, fixedParams)
                     else:
                         ''' Write and then append'''
                         print(len(pfnames))
@@ -355,6 +351,11 @@ def generate(MyConfig):
                         #print("size is " , tfr.__tfRetSize__())
                         tfr.__tfUpdateSize__() #might be a problem in edge case when each record is as big as max tfrecord size.
                         #print("Updated size is " , tfr.__tfRetSize__())
+                    
+                    if index == (len(userParam) - 1) and v == (numChunks-1):
+                        print(len(pfnames))
+                        tfr.__tfwriteN__(outputpath, pfnames, soundDurations, segmentNum, audioSegments, usertfP, synthtfP, paramArr, fixedParams)
+
             else:
                 print("Not recognized format")
 
