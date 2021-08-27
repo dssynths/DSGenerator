@@ -320,6 +320,10 @@ def generate(MyConfig):
                         segmentNum.append(v)
                         usertfP.append(userP)
                         synthtfP.append(synthtfP)
+
+                        if index == (len(userParam) - 1) and v == (numChunks-1):
+                            print(len(pfnames))
+                            tfr.__tfwriteN__(outputpath, pfnames, soundDurations, segmentNum, audioSegments, usertfP, synthtfP, paramArr, fixedParams)
                     else:
                         ''' Write and then append'''
                         print(len(pfnames))
