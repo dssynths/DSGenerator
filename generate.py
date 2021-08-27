@@ -292,7 +292,7 @@ def generate(MyConfig):
             
             elif MyConfig["recordFormat"] == "tfrecords":
 
-                tfr.__addFeatureData__(pfName, [0,MyConfig["soundDuration"]], newsig, v)
+                tfr.__addFeatureData__(pfName, [0, chunkSecs], newsig, v)
                 # MyConfig["shard_size"], MyConfig["samplerate"], totalDuration)
                 
                 for pnum in range(len(paramArr)):
@@ -316,7 +316,7 @@ def generate(MyConfig):
                         #print("new size with record " , tfr.__tfRetSize__())
                         audioSegments.append(newsig)
                         pfnames.append(pfName)
-                        soundDurations.append([0,MyConfig["soundDuration"]])
+                        soundDurations.append([0,chunkSecs])
                         segmentNum.append(v)
                         usertfP.append(userP)
                         synthtfP.append(synthtfP)
@@ -333,12 +333,12 @@ def generate(MyConfig):
                         # afresh with current record
                         audioSegments.append(newsig)
                         pfnames.append(pfName)
-                        soundDurations.append([0,MyConfig["soundDuration"]])
+                        soundDurations.append([0,chunkSecs])
                         segmentNum.append(v)
                         usertfP.append(userP)
                         synthtfP.append(synthtfP)
 
-                        tfr.__addFeatureData__(pfName, [0,MyConfig["soundDuration"]], newsig, v)
+                        tfr.__addFeatureData__(pfName, [0, chunkSecs], newsig, v)
                         # MyConfig["shard_size"], MyConfig["samplerate"], totalDuration)
                         
                         for pnum in range(len(paramArr)):
