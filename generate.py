@@ -269,7 +269,7 @@ def generate(MyConfig):
                 '''Write parameters and meta-parameters'''
                 for pnum in range(len(paramArr)):
                         #pm.addParam(pfName, paramArr[pnum]['synth_pname'], [0,MyConfig["soundDuration"]], [userP[pnum], userP[pnum]], units=paramArr[pnum]['synth_units'], nvals=paramArr[pnum]['user_nvals'], minval=paramArr[pnum]['user_minval'], maxval=paramArr[pnum]['user_maxval'], origUnits=None, origMinval=paramArr[pnum]['synth_minval'], origMaxval=paramArr[pnum]['synth_maxval'])
-                        pm.addParam(pfName, paramArr[pnum]['synth_pname'], [0,MyConfig["soundDuration"]], [userP[pnum], userP[pnum]], units=paramArr[pnum]['synth_units'], nvals=paramArr[pnum]['user_nvals'], minval=paramArr[pnum]['user_minval'], maxval=paramArr[pnum]['user_maxval'], origUnits=None, origMinval=paramArr[pnum]['synth_minval'], origMaxval=paramArr[pnum]['synth_maxval'])
+                        pm.addParam(pfName, paramArr[pnum]['synth_pname'], [0,chunkSecs], [userP[pnum], userP[pnum]], units=paramArr[pnum]['synth_units'], nvals=paramArr[pnum]['user_nvals'], minval=paramArr[pnum]['user_minval'], maxval=paramArr[pnum]['user_maxval'], origUnits=None, origMinval=paramArr[pnum]['synth_minval'], origMaxval=paramArr[pnum]['synth_maxval'])
                         
                         if "user_doc" in paramArr[pnum] and paramArr[pnum]["user_doc"] != "" :
                             pm.addMetaParam(pfName, paramArr[pnum]['synth_pname']+"_user_doc",paramArr[pnum]['user_doc']) 
