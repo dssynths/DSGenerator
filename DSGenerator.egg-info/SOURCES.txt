@@ -1,0 +1,7 @@
+README.md
+generate.py
+setup.py
+DSGenerator.egg-info/PKG-INFO
+DSGenerator.egg-info/SOURCES.txt
+DSGenerator.egg-info/dependency_links.txt
+DSGenerator.egg-info/top_level.txt
