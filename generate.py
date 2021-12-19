@@ -274,7 +274,7 @@ def generate(MyConfig):
                     pfName = fileHandle.makeFullPath(outputpath, paramName,".params")
 
                 if MyConfig["recordFormat"] == "params" or MyConfig["recordFormat"]==0:
-                    pm=paramManager.paramManager(pfName, fileHandle.getFullPath())
+                    pm=paramManager.paramManager(wavPath, fileHandle.getFullPath())
                     pm.initParamFiles(overwrite=True)
 
                     '''Write parameters and meta-parameters'''
